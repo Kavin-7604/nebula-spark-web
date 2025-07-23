@@ -1,10 +1,10 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Sphere, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
 const FloatingAvatar = () => {
   const meshRef = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<THREE.MeshPhongMaterial>(null);
 
   useFrame((state) => {
     if (meshRef.current) {
@@ -12,20 +12,28 @@ const FloatingAvatar = () => {
       meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.3;
       meshRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.1;
     }
+    
+    if (materialRef.current) {
+      // Animate the emissive color for a glowing effect
+      const intensity = Math.sin(state.clock.elapsedTime * 2) * 0.3 + 0.5;
+      materialRef.current.emissive.setHSL(0.5, 1, intensity * 0.2);
+    }
   });
 
   return (
     <group>
-      <Sphere ref={meshRef} args={[1, 64, 64]} scale={1.5}>
-        <MeshDistortMaterial
+      <mesh ref={meshRef} scale={1.5}>
+        <icosahedronGeometry args={[1, 2]} />
+        <meshPhongMaterial
+          ref={materialRef}
           color="#00ffff"
-          attach="material"
-          distort={0.3}
-          speed={2}
-          roughness={0.2}
-          metalness={0.8}
+          shininess={100}
+          specular="#ffffff"
+          emissive="#001133"
+          transparent
+          opacity={0.9}
         />
-      </Sphere>
+      </mesh>
       <pointLight position={[2, 2, 2]} intensity={1} color="#00ffff" />
       <pointLight position={[-2, -2, -2]} intensity={0.5} color="#ff00ff" />
     </group>
